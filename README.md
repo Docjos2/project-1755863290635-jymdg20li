@@ -16,6 +16,7 @@ A comprehensive web-based assessment platform designed for senior marketing and 
 
 ### Key Capabilities
 - ✅ **105+ high-quality questions** across 8 assessment types
+- ✅ **⚡ Quick Answer AI** - Get instant AI-powered answers in <10 seconds (Claude integration)
 - ✅ **Timed practice tests** with realistic test conditions
 - ✅ **Immediate feedback** with detailed explanations
 - ✅ **Progress tracking** with LocalStorage persistence
@@ -170,6 +171,44 @@ Questions are stored in TypeScript files in the `src/data/` directory. To add ne
 3. **The question will automatically be included** in the question pool
 
 ## Usage Guide
+
+### ⚡ Quick Answer (Real-Time AI Assistant)
+
+The Quick Answer feature provides instant AI-powered answers during live assessments.
+
+#### Setup
+
+1. **Get an Anthropic API Key**:
+   - Visit [console.anthropic.com](https://console.anthropic.com/)
+   - Create an account or sign in
+   - Generate an API key
+
+2. **Configure in App**:
+   - Click "⚡ Quick Answer" from the home page
+   - Click the Settings icon
+   - Enter your API key (stored locally in browser)
+
+#### How to Use
+
+1. **During a live assessment**, open Quick Answer
+2. **Paste the question** into the question field
+3. **Add answer options** (if multiple choice)
+4. **Add context** (optional - data tables, background info)
+5. **Press Ctrl+Enter** or click "Get Answer"
+6. **Get instant answer** (<10 seconds) with explanation
+7. **Copy answer** to use in your assessment
+
+**Keyboard Shortcuts**:
+- `Ctrl + Enter` - Submit question
+- Quick paste and go workflow optimized for speed
+
+**Best Practices**:
+- Keep the Quick Answer tab open during assessments
+- Paste questions quickly as they appear
+- Include all context (data tables, scenarios)
+- Review the explanation to understand the reasoning
+
+**Note**: Your API key is stored locally in your browser and never sent to any server except Anthropic's API.
 
 ### For Test-Takers
 

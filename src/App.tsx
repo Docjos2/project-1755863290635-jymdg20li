@@ -3,10 +3,11 @@ import { Landing } from './pages/Landing';
 import { Assessment } from './pages/Assessment';
 import { Results } from './pages/Results';
 import { Dashboard } from './pages/Dashboard';
+import { QuickAnswer } from './pages/QuickAnswer';
 import { useAppStore } from './stores/useAppStore';
 import { Question } from './types';
 
-type Page = 'landing' | 'assessment' | 'results' | 'dashboard';
+type Page = 'landing' | 'assessment' | 'results' | 'dashboard' | 'quick-answer';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('landing');
@@ -36,6 +37,10 @@ function App() {
     setCurrentPage('dashboard');
   };
 
+  const handleOpenQuickAnswer = () => {
+    setCurrentPage('quick-answer');
+  };
+
   const handleRetry = () => {
     resetAssessment();
     useAppStore.getState().startAssessment(currentQuestions);
@@ -63,6 +68,7 @@ function App() {
         <Landing
           onStartAssessment={handleStartAssessment}
           onViewDashboard={handleViewDashboard}
+          onOpenQuickAnswer={handleOpenQuickAnswer}
         />
       )}
 
@@ -85,6 +91,10 @@ function App() {
 
       {currentPage === 'dashboard' && (
         <Dashboard onReturnHome={handleReturnHome} />
+      )}
+
+      {currentPage === 'quick-answer' && (
+        <QuickAnswer onClose={handleReturnHome} />
       )}
     </>
   );

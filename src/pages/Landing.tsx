@@ -10,6 +10,7 @@ import {
   Target,
   BookOpen,
   Play,
+  Zap,
 } from 'lucide-react';
 import { QuestionType, DifficultyLevel, IndustryType, RoleType } from '../types';
 import { useAppStore } from '../stores/useAppStore';
@@ -18,11 +19,13 @@ import { getRandomQuestions } from '../data';
 interface LandingProps {
   onStartAssessment: (questions: any[], title: string) => void;
   onViewDashboard: () => void;
+  onOpenQuickAnswer: () => void;
 }
 
 export const Landing: React.FC<LandingProps> = ({
   onStartAssessment,
   onViewDashboard,
+  onOpenQuickAnswer,
 }) => {
   const { userProfile, setUserProfile, userProgress } = useAppStore();
   const [showOnboarding, setShowOnboarding] = useState(!userProfile);
@@ -117,7 +120,7 @@ export const Landing: React.FC<LandingProps> = ({
         {/* Quick Actions */}
         <section className="mb-12">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Quick Start</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card hover onClick={handleQuickStart}>
               <div className="flex flex-col items-center text-center">
                 <div className="p-3 bg-primary-100 rounded-full mb-4">
@@ -156,6 +159,20 @@ export const Landing: React.FC<LandingProps> = ({
                 </h3>
                 <p className="text-gray-600 text-sm">
                   Track progress and see analytics
+                </p>
+              </div>
+            </Card>
+
+            <Card hover onClick={onOpenQuickAnswer} className="border-2 border-orange-300 bg-gradient-to-br from-orange-50 to-yellow-50">
+              <div className="flex flex-col items-center text-center">
+                <div className="p-3 bg-orange-100 rounded-full mb-4">
+                  <Zap className="w-8 h-8 text-orange-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  ⚡ Quick Answer
+                </h3>
+                <p className="text-gray-600 text-sm font-medium">
+                  Get instant AI answers (&lt;10s)
                 </p>
               </div>
             </Card>
