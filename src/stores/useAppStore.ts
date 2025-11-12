@@ -11,6 +11,8 @@ import {
   RoleType,
   IndustryType,
 } from '../types';
+import { supabaseService } from '../services/supabaseService';
+import { useAuthStore } from './useAuthStore';
 
 interface AppState {
   // User Profile
@@ -20,9 +22,13 @@ interface AppState {
 
   // User Progress
   userProgress: UserProgress;
-  addAssessmentSession: (session: AssessmentSession) => void;
-  bookmarkQuestion: (questionId: string) => void;
-  unbookmarkQuestion: (questionId: string) => void;
+  addAssessmentSession: (session: AssessmentSession) => Promise<void>;
+  bookmarkQuestion: (questionId: string, category: string) => Promise<void>;
+  unbookmarkQuestion: (questionId: string) => Promise<void>;
+
+  // Supabase sync
+  loadUserData: () => Promise<void>;
+  isAuthenticated: () => boolean;
 
   // Current Assessment
   currentAssessment: {
@@ -100,8 +106,61 @@ export const useAppStore = create<AppState>()(
             : null,
         })),
 
+      // Helper methods
+      isAuthenticated: () => {
+        const authState = useAuthStore.getState();
+        return !!authState.user;
+      },
+
+      loadUserData: async () => {
+        const authState = useAuthStore.getState();
+        if (!authState.user) return;
+
+        try {
+          // Load user progress
+          const { data: progressData } = await supabaseService.progress.getProgress();
+
+          // Load bookmarks
+          const { data: bookmarksData } = await supabaseService.bookmark.getBookmarks();
+
+          // Load assessment results
+          const { data: resultsData } = await supabaseService.assessment.getResults();
+
+          if (progressData || bookmarksData || resultsData) {
+            const bookmarkedQuestions = bookmarksData?.map((b: any) => b.question_id) || [];
+
+            // Convert Supabase results to AssessmentSession format
+            const assessmentHistory: AssessmentSession[] = resultsData?.map((result: any) => ({
+              id: result.id,
+              assessmentId: result.id,
+              startTime: new Date(result.created_at).getTime(),
+              endTime: new Date(result.completed_at).getTime(),
+              results: (result.answers as any[]) || [],
+              score: result.score,
+              totalQuestions: result.total_questions,
+              difficulty: 'mid' as DifficultyLevel,
+              type: result.category as QuestionType,
+            })) || [];
+
+            set({
+              userProgress: {
+                totalAssessments: (progressData as any)?.total_questions_attempted || 0,
+                completedAssessments: resultsData?.length || 0,
+                averageScore: (progressData as any)?.average_score || 0,
+                strongAreas: [],
+                weakAreas: [],
+                assessmentHistory,
+                bookmarkedQuestions,
+              },
+            });
+          }
+        } catch (error) {
+          console.error('Failed to load user data from Supabase:', error);
+        }
+      },
+
       // Progress Actions
-      addAssessmentSession: (session) =>
+      addAssessmentSession: async (session) => {
         set((state) => {
           const newHistory = [...state.userProgress.assessmentHistory, session];
           const totalScore = newHistory.reduce((sum, s) => sum + s.score, 0);
@@ -151,9 +210,29 @@ export const useAppStore = create<AppState>()(
               assessmentHistory: newHistory,
             },
           };
-        }),
+        });
 
-      bookmarkQuestion: (questionId) =>
+        // Sync to Supabase if authenticated
+        const authState = useAuthStore.getState();
+        if (authState.user) {
+          try {
+            const endTime = session.endTime || Date.now();
+            const startTime = session.startTime || Date.now();
+            await supabaseService.assessment.saveResult({
+              category: session.type,
+              score: session.score,
+              totalQuestions: session.totalQuestions,
+              correctAnswers: session.results.filter(r => r.isCorrect).length,
+              timeTaken: Math.floor((endTime - startTime) / 1000),
+              answers: session.results,
+            });
+          } catch (error) {
+            console.error('Failed to sync assessment to Supabase:', error);
+          }
+        }
+      },
+
+      bookmarkQuestion: async (questionId, category) => {
         set((state) => ({
           userProgress: {
             ...state.userProgress,
@@ -162,9 +241,20 @@ export const useAppStore = create<AppState>()(
               questionId,
             ],
           },
-        })),
+        }));
 
-      unbookmarkQuestion: (questionId) =>
+        // Sync to Supabase if authenticated
+        const authState = useAuthStore.getState();
+        if (authState.user) {
+          try {
+            await supabaseService.bookmark.addBookmark(questionId, category);
+          } catch (error) {
+            console.error('Failed to sync bookmark to Supabase:', error);
+          }
+        }
+      },
+
+      unbookmarkQuestion: async (questionId) => {
         set((state) => ({
           userProgress: {
             ...state.userProgress,
@@ -172,7 +262,18 @@ export const useAppStore = create<AppState>()(
               (id) => id !== questionId
             ),
           },
-        })),
+        }));
+
+        // Sync to Supabase if authenticated
+        const authState = useAuthStore.getState();
+        if (authState.user) {
+          try {
+            await supabaseService.bookmark.removeBookmark(questionId);
+          } catch (error) {
+            console.error('Failed to remove bookmark from Supabase:', error);
+          }
+        }
+      },
 
       // Assessment Actions
       startAssessment: (questions, timeLimit) =>

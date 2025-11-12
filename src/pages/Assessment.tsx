@@ -81,7 +81,7 @@ export const Assessment: React.FC<AssessmentProps> = ({
       if (isBookmarked) {
         unbookmarkQuestion(currentQuestion.id);
       } else {
-        bookmarkQuestion(currentQuestion.id);
+        bookmarkQuestion(currentQuestion.id, currentQuestion.type);
       }
     }
   };
