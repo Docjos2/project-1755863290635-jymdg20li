@@ -5,7 +5,7 @@ import type { Database } from '../types/supabase';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-// Create Supabase client
+// Create Supabase client (typed)
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: false, // We're not using auth yet
@@ -13,6 +13,18 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   realtime: {
     params: {
       eventsPerSecond: 2, // Rate limit for free tier
+    },
+  },
+});
+
+// Create untyped client for operations where generated types don't match manual schema
+export const supabaseUntyped = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: false,
+  },
+  realtime: {
+    params: {
+      eventsPerSecond: 2,
     },
   },
 });

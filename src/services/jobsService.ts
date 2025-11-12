@@ -1,4 +1,4 @@
-import { supabase, type IndeedJob, type EnrichedIndeedJob } from '../lib/supabase';
+import { supabase, supabaseUntyped, type IndeedJob, type EnrichedIndeedJob } from '../lib/supabase';
 
 // Filter options for job queries
 export interface JobFilters {
@@ -151,9 +151,12 @@ export const jobsService = {
    */
   async markAsRead(jobId: string): Promise<boolean> {
     try {
-      const { error } = await supabase
+      const { error } = await supabaseUntyped
         .from('indeed_jobs')
-        .update({ is_read: true, is_new: false })
+        .update({
+          is_read: true,
+          is_new: false
+        })
         .eq('id', jobId);
 
       if (error) throw error;
@@ -169,7 +172,7 @@ export const jobsService = {
    */
   async toggleFavorite(jobId: string, isFavorited: boolean): Promise<boolean> {
     try {
-      const { error } = await supabase
+      const { error } = await supabaseUntyped
         .from('indeed_jobs')
         .update({ is_favorited: isFavorited })
         .eq('id', jobId);
@@ -187,11 +190,11 @@ export const jobsService = {
    */
   async markAsApplied(jobId: string): Promise<boolean> {
     try {
-      const { error } = await supabase
+      const { error } = await supabaseUntyped
         .from('indeed_jobs')
         .update({
           is_applied: true,
-          applied_at: new Date().toISOString(),
+          applied_at: new Date().toISOString()
         })
         .eq('id', jobId);
 

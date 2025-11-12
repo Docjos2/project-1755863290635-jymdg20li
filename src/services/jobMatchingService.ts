@@ -1,4 +1,7 @@
-import type { AssessmentType } from '../types';
+import type { QuestionType } from '../types';
+
+// Type alias for convenience
+type AssessmentType = QuestionType;
 
 /**
  * Job-Assessment Matching Service
@@ -139,6 +142,10 @@ const KEYWORD_ASSESSMENT_MAP: Record<AssessmentType, string[]> = {
   'logical': [
     'analytical', 'critical thinking', 'reasoning', 'systematic',
     'structured', 'problem-solving', 'methodology', 'framework', 'process'
+  ],
+  'abstract': [
+    'pattern recognition', 'visual reasoning', 'spatial awareness',
+    'non-verbal', 'diagram interpretation', 'sequences', 'matrices'
   ],
   'personality': [
     'culture fit', 'values', 'work style', 'personality', 'attitude',
