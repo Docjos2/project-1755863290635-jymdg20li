@@ -11,9 +11,12 @@ import {
   BookOpen,
   Play,
   Zap,
+  LogOut,
+  User,
 } from 'lucide-react';
 import { QuestionType, DifficultyLevel, IndustryType, RoleType } from '../types';
 import { useAppStore } from '../stores/useAppStore';
+import { useAuth } from '../contexts/AuthContext';
 import { getRandomQuestions } from '../data';
 
 interface LandingProps {
@@ -28,7 +31,14 @@ export const Landing: React.FC<LandingProps> = ({
   onOpenQuickAnswer,
 }) => {
   const { userProfile, setUserProfile, userProgress } = useAppStore();
+  const { user, signOut } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(!userProfile);
+
+  const handleSignOut = async () => {
+    if (window.confirm('Are you sure you want to sign out?')) {
+      await signOut();
+    }
+  };
 
   const assessmentTypes = [
     {
@@ -109,9 +119,29 @@ export const Landing: React.FC<LandingProps> = ({
                 Prepare for senior marketing/communications roles in the Netherlands
               </p>
             </div>
-            <Button onClick={onViewDashboard} variant="outline">
-              View Progress
-            </Button>
+            <div className="flex items-center space-x-4">
+              <Button onClick={onViewDashboard} variant="outline">
+                View Progress
+              </Button>
+              <div className="flex items-center space-x-3 border-l pl-4">
+                <div className="text-right">
+                  <p className="text-sm font-medium text-gray-900">
+                    {user?.email?.split('@')[0] || 'User'}
+                  </p>
+                  {userProfile && (
+                    <p className="text-xs text-gray-500">{userProfile.targetRole}</p>
+                  )}
+                </div>
+                <Button
+                  onClick={handleSignOut}
+                  variant="outline"
+                  className="p-2"
+                  title="Sign out"
+                >
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </header>

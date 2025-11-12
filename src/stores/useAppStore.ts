@@ -11,12 +11,21 @@ import {
   RoleType,
   IndustryType,
 } from '../types';
+import {
+  syncUserProfile,
+  loadUserProfile,
+  syncAssessmentSession,
+  loadUserProgress,
+  addBookmark,
+  removeBookmark,
+} from '../lib/supabaseSync';
 
 interface AppState {
   // User Profile
   userProfile: UserProfile | null;
   setUserProfile: (profile: UserProfile) => void;
   updateUserProfile: (updates: Partial<UserProfile>) => void;
+  loadUserData: () => Promise<void>;
 
   // User Progress
   userProgress: UserProgress;
@@ -91,17 +100,43 @@ export const useAppStore = create<AppState>()(
       },
 
       // User Profile Actions
-      setUserProfile: (profile) => set({ userProfile: profile }),
+      setUserProfile: (profile) => {
+        set({ userProfile: profile });
+        // Sync to Supabase in background
+        syncUserProfile(profile).catch(console.error);
+      },
 
-      updateUserProfile: (updates) =>
+      updateUserProfile: (updates) => {
         set((state) => ({
           userProfile: state.userProfile
             ? { ...state.userProfile, ...updates }
             : null,
-        })),
+        }));
+        // Sync to Supabase in background
+        const state = get();
+        if (state.userProfile) {
+          syncUserProfile(state.userProfile).catch(console.error);
+        }
+      },
+
+      loadUserData: async () => {
+        try {
+          const [profile, progress] = await Promise.all([
+            loadUserProfile(),
+            loadUserProgress(),
+          ]);
+
+          if (profile) {
+            set({ userProfile: profile });
+          }
+          set({ userProgress: progress });
+        } catch (error) {
+          console.error('Error loading user data:', error);
+        }
+      },
 
       // Progress Actions
-      addAssessmentSession: (session) =>
+      addAssessmentSession: (session) => {
         set((state) => {
           const newHistory = [...state.userProgress.assessmentHistory, session];
           const totalScore = newHistory.reduce((sum, s) => sum + s.score, 0);
@@ -151,9 +186,12 @@ export const useAppStore = create<AppState>()(
               assessmentHistory: newHistory,
             },
           };
-        }),
+        });
+        // Sync to Supabase in background
+        syncAssessmentSession(session).catch(console.error);
+      },
 
-      bookmarkQuestion: (questionId) =>
+      bookmarkQuestion: (questionId) => {
         set((state) => ({
           userProgress: {
             ...state.userProgress,
@@ -162,9 +200,12 @@ export const useAppStore = create<AppState>()(
               questionId,
             ],
           },
-        })),
+        }));
+        // Sync to Supabase in background
+        addBookmark(questionId).catch(console.error);
+      },
 
-      unbookmarkQuestion: (questionId) =>
+      unbookmarkQuestion: (questionId) => {
         set((state) => ({
           userProgress: {
             ...state.userProgress,
@@ -172,7 +213,10 @@ export const useAppStore = create<AppState>()(
               (id) => id !== questionId
             ),
           },
-        })),
+        }));
+        // Sync to Supabase in background
+        removeBookmark(questionId).catch(console.error);
+      },
 
       // Assessment Actions
       startAssessment: (questions, timeLimit) =>
