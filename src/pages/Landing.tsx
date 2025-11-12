@@ -15,6 +15,7 @@ import {
 import { QuestionType, DifficultyLevel, IndustryType, RoleType } from '../types';
 import { useAppStore } from '../stores/useAppStore';
 import { getRandomQuestions } from '../data';
+import { JobList } from '../components/JobList';
 
 interface LandingProps {
   onStartAssessment: (questions: any[], title: string) => void;
@@ -177,6 +178,11 @@ export const Landing: React.FC<LandingProps> = ({
               </div>
             </Card>
           </div>
+        </section>
+
+        {/* Job Board Section */}
+        <section className="mb-12">
+          <JobList />
         </section>
 
         {/* Assessment Types */}
