@@ -61,7 +61,21 @@ cd project-1755863290635-jymdg20li
 npm install
 ```
 
-3. **Start development server**
+3. **Configure API Key (Optional)**
+
+For Quick Answer feature, you can set your Anthropic API key as an environment variable:
+
+```bash
+# Copy the example env file
+cp .env.example .env
+
+# Edit .env and add your API key
+# VITE_ANTHROPIC_API_KEY=sk-ant-api03-your-key-here
+```
+
+**Note**: The `.env` file is in `.gitignore` and will never be committed. Users can also enter their API key through the app's settings UI.
+
+4. **Start development server**
 ```bash
 npm run dev
 ```
@@ -87,9 +101,19 @@ npm run preview
 This application is ready to deploy to any static hosting platform:
 
 ### Vercel
+
+**Option 1: Web UI (Recommended)**
+1. Go to [vercel.com](https://vercel.com) and import your repository
+2. In **Environment Variables**, add:
+   - Key: `VITE_ANTHROPIC_API_KEY`
+   - Value: Your Anthropic API key
+3. Deploy
+
+**Option 2: CLI**
 ```bash
 npm install -g vercel
 vercel
+# Add environment variable in Vercel dashboard after deployment
 ```
 
 ### Netlify

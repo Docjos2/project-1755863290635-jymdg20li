@@ -14,7 +14,12 @@ export const QuickAnswer: React.FC<QuickAnswerProps> = ({ onClose }) => {
   const [answer, setAnswer] = useState('');
   const [explanation, setExplanation] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem('anthropic-api-key') || '');
+  const [apiKey, setApiKey] = useState(() => {
+    // Check localStorage first, then environment variable
+    const storedKey = localStorage.getItem('anthropic-api-key');
+    const envKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+    return storedKey || envKey || '';
+  });
   const [showSettings, setShowSettings] = useState(!apiKey);
   const [copied, setCopied] = useState(false);
   const questionInputRef = useRef<HTMLTextAreaElement>(null);
@@ -133,6 +138,12 @@ export const QuickAnswer: React.FC<QuickAnswerProps> = ({ onClose }) => {
                   placeholder="sk-ant-..."
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 />
+                {import.meta.env.VITE_ANTHROPIC_API_KEY && !localStorage.getItem('anthropic-api-key') && (
+                  <p className="text-sm text-green-600 mt-2 flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4" />
+                    Using environment variable (configured in .env file)
+                  </p>
+                )}
                 <p className="text-sm text-gray-500 mt-2">
                   Get your API key from{' '}
                   <a
